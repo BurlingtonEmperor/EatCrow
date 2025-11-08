@@ -50,6 +50,9 @@ def installProgram ():
   else:
     print("Please come back to these settings.");
     
+def runThroughCLI (inoDIR):
+  os.system("arduino-cli compile --fqbn arduino:avr:uno " + inoDIR);
+    
 def runCommand (commandText):
   match (commandText):
     case ("help"):
