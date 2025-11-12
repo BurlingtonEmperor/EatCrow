@@ -1,15 +1,20 @@
 import sys
 import os
 import webbrowser
+import pickle
 
 from troubleshoot import *
 
 which_os = "";
 installation_var = 1;
 is_setup = 0;
+current_dir = "";
 
 def clearScreen ():
   os.system('cls' if os.name == 'nt' else 'clear');
+
+def clearIDLE ():
+  print('\n' * 100);
 
 def checkWhichPlatform ():
   global which_os;
@@ -62,15 +67,66 @@ def installProgram ():
     
 def runThroughCLI (inoDIR):
   os.system("arduino-cli compile --fqbn arduino:avr:uno " + inoDIR);
+
+def oneLinerCommands (commandText):
+  csv_liner = commandText.split(";");
+  for x in csv_liner:
+    runCommand(x);
+
+def runParameterCommand (commandText):
+  csv_liner = commandText.split();
+  match (csv_liner[0]):
+    case ("run_cli"):
+      runThroughCLI(csv_liner[1]);
+    case ("echo"):
+      csv_liner.pop(0);
+      # print(csv_liner);
+      echo_liner = "";
+      echo_line_space = " ";
+      for x in csv_liner:
+        match (echo_liner):
+          case "":
+            echo_line_space = "";
+          case _:
+            echo_line_space = " ";
+        echo_liner += (echo_line_space + x);
+      print(echo_liner);
     
 def runCommand (commandText):
+  global current_dir;
+
+  potentialParameters = commandText.split();
   match (commandText):
     case ("help"):
       print("update_cores: update all board cores");
+      print("echo: ex. 'echo test' outputs test");
+      print("oneliner: run a series of commands");
+      print("clear: clear screen");
+      print("clear_idle: clears IDLE screen (if running on IDLE)");
+      print("find_dir: find and set current directory");
+      print("run_cli: ex. 'run_cli test' runs a test program.");
     case ("update_cores"):
       updateCORES();
+    case ("oneliner"):
+      print("Please seperate commands by the semicolon character ';'.");
+      oneliner_input = input("Commands: ");
+      oneLinerCommands(oneliner_input);
+    case ("clear"):
+      clearScreen();
+    case ("clear_idle"):
+      clearIDLE();
+    case ("find_dir"):
+      current_dir = os.path.dirname(os.path.realpath(__file__));
+      print(current_dir);
     case _:
-      print("Not a valid command."); #P.S. you can simply turn these print statements into return statements for a more advanced UI in the future.
+      match (potentialParameters[0]):
+        case ("echo"):
+          runParameterCommand(commandText);
+        case ("run_cli"):
+          runParameterCommand(commandText);
+        case _:
+          print("Not a valid command.");
+      #P.S. you can simply turn these print statements into return statements for a more advanced UI in the future.
       
 user_choice_init = 0;
 def loopThroughInterface ():
@@ -94,10 +150,13 @@ Would you like to...
             clearScreen();
             loopThroughInterface();
       case 1:
-        clearScreen();
         print("Type HELP for a list of commands.");
         user_choice_ask = input("?: ");
         runCommand(user_choice_ask.lower());
         loopThroughInterface();
 
+#test
+runParameterCommand("echo Eat Crow");
+#end test
 loopThroughInterface();
+        
