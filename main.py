@@ -9,6 +9,7 @@ which_os = "";
 installation_var = 1;
 is_setup = 0;
 current_dir = "";
+user_choice_init = 0;
 
 def clearScreen ():
   os.system('cls' if os.name == 'nt' else 'clear');
@@ -124,6 +125,7 @@ def runParameterCommand (commandText):
     
 def runCommand (commandText):
   global current_dir;
+  global user_choice_init;
 
   potentialParameters = commandText.split();
   match (commandText):
@@ -136,6 +138,9 @@ def runCommand (commandText):
       print("find_dir: find and set current directory");
       print("run_cli: ex. 'run_cli test' runs a test program.");
       print("find_file: find if a file exists; ex. 'find_file main.py'");
+      print("em_stop: stop current arduino program");
+      print("end_prgm: ends program");
+      print("restart: restarts program");
     case ("update_cores"):
       updateCORES();
     case ("oneliner"):
@@ -149,6 +154,10 @@ def runCommand (commandText):
     case ("find_dir"):
       current_dir = os.path.dirname(os.path.realpath(__file__));
       print(current_dir);
+    case ("end_prgm"):
+      sys.exit();
+    case ("restart"):
+      user_choice_init = 0;
     case _:
       match (potentialParameters[0]):
         case ("echo"):
@@ -160,8 +169,7 @@ def runCommand (commandText):
         case _:
           print("Not a valid command.");
       #P.S. you can simply turn these print statements into return statements for a more advanced UI in the future.
-      
-user_choice_init = 0;
+
 def loopThroughInterface ():
     global user_choice_init
     # I don't like using classes.
