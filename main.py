@@ -73,11 +73,41 @@ def oneLinerCommands (commandText):
   for x in csv_liner:
     runCommand(x);
 
+def findIfFileExists (fileDIR):
+  match (current_dir):
+    case (""):
+      print("Current directory has not been set. Please use the 'find_dir' command.");
+    case _:
+      newFilePath = current_dir + "\\" + fileDIR;
+      if (os.path.exists(newFilePath)):
+        return (fileDIR + " exists.");
+      else:
+        return (fileDIR + " does not exist.");
+
+def saveMacro (macroLines, macroName): #should be in the form of a list to be kosher.
+  if (findIfFileExists(macroName + ".pkl").includes("exists.")):
+    print("There is already a macro file that exists at that path.");
+  else:
+    with open(macroName + ".pkl", "wb") as f:
+      pickle.dump(macroLines, f);
+      print("Saved macro at " + current_dir + "\\" + macroName + ".pkl");
+
+def loadMacro (macroName):
+  if (findIfFileExists(macroName + ".pkl").includes("exists.")):
+    print();
+  else:
+    print("A macro file does not exist at that path.");
+
+def editMacro (macroName):
+  print();
+    
 def runParameterCommand (commandText):
   csv_liner = commandText.split();
   match (csv_liner[0]):
     case ("run_cli"):
       runThroughCLI(csv_liner[1]);
+    case ("find_file"):
+      print(findIfFileExists(csv_liner[1]));
     case ("echo"):
       csv_liner.pop(0);
       # print(csv_liner);
@@ -105,6 +135,7 @@ def runCommand (commandText):
       print("clear_idle: clears IDLE screen (if running on IDLE)");
       print("find_dir: find and set current directory");
       print("run_cli: ex. 'run_cli test' runs a test program.");
+      print("find_file: find if a file exists; ex. 'find_file main.py'");
     case ("update_cores"):
       updateCORES();
     case ("oneliner"):
@@ -123,6 +154,8 @@ def runCommand (commandText):
         case ("echo"):
           runParameterCommand(commandText);
         case ("run_cli"):
+          runParameterCommand(commandText);
+        case ("find_file"):
           runParameterCommand(commandText);
         case _:
           print("Not a valid command.");
@@ -159,4 +192,3 @@ Would you like to...
 runParameterCommand("echo Eat Crow");
 #end test
 loopThroughInterface();
-        
