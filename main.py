@@ -2,6 +2,7 @@ import sys
 import os
 import webbrowser
 import pickle
+import serial
 
 from troubleshoot import *
 
@@ -10,6 +11,7 @@ installation_var = 1;
 is_setup = 0;
 current_dir = "";
 user_choice_init = 0;
+COM_PORT = "COM3"; # use python -m pip install
 
 def clearScreen ():
   os.system('cls' if os.name == 'nt' else 'clear');
@@ -19,11 +21,15 @@ def clearIDLE ():
 
 def checkWhichPlatform ():
   global which_os;
+  global COM_PORT;
+  
   which_os = sys.platform;
   if (which_os == 'win32' or which_os == 'win64' or which_os.includes('win')):
     which_os = 'win';
+    COM_PORT = "COM3";
   elif (which_os == 'linux'):
     which_os = 'linux';
+    COM_PORT = "/dev/ttyUSB0";
   else:
     installation_var = 0;
     return 'This operating system is incompatible with the Autoclave Program. Eat crow.';
@@ -94,8 +100,11 @@ def saveMacro (macroLines, macroName): #should be in the form of a list to be ko
       print("Saved macro at " + current_dir + "\\" + macroName + ".pkl");
 
 def loadMacro (macroName):
+  macro_contents = "";
   if (findIfFileExists(macroName + ".pkl").includes("exists.")):
-    print();
+    with open(macroName + ".pkl", "rb") as f:
+      macro_contents = pickle.load(f);
+    return macro_contents;
   else:
     print("A macro file does not exist at that path.");
 
@@ -200,3 +209,4 @@ Would you like to...
 runParameterCommand("echo Eat Crow");
 #end test
 loopThroughInterface();
+        
