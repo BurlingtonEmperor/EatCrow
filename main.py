@@ -3,6 +3,8 @@ import os
 import webbrowser
 import pickle
 import serial
+import subprocess
+import socket
 
 from troubleshoot import *
 
@@ -41,7 +43,7 @@ def installArduinoCLI ():
       print('Please install the Arduino CLI program from the Github Repository.');
       yes_or_no = input('Y/N: ').lower();
       if (yes_or_no == 'y'):
-        webbrowser.open('https://docs.arduino.cc/arduino-cli/installation/');
+        os.system("winget install --id=ArduinoSA.CLI -e");
       else:
         installation_var = 0;
         print('Installation has been stopped. ');
@@ -68,9 +70,13 @@ def installProgram ():
   
   if (confirmSetup == "y"):
     is_setup = 1;
+    if (which_os == "win"):
+      print("Please restart this terminal window.");
+    else:
+      loopThroughInterface();
   else:
     print("Please come back to these settings.");
-  loopThroughInterface();
+    loopThroughInterface();
     
 def runThroughCLI (inoDIR):
   os.system("arduino-cli compile --fqbn arduino:avr:uno " + inoDIR);
@@ -110,6 +116,13 @@ def loadMacro (macroName):
 
 def editMacro (macroName):
   print();
+
+def check_internet_socket():
+  try:
+    socket.create_connection(("8.8.8.8", 53), timeout=5);
+    return True;
+  except OSError:
+    return False;
     
 def runParameterCommand (commandText):
   csv_liner = commandText.split();
@@ -150,6 +163,8 @@ def runCommand (commandText):
       print("em_stop: stop current arduino program");
       print("end_prgm: ends program");
       print("restart: restarts program");
+      print("os_input: input direct shell commands");
+      print("check_web_conn: check internet connection");
     case ("update_cores"):
       updateCORES();
     case ("oneliner"):
@@ -167,6 +182,11 @@ def runCommand (commandText):
       sys.exit();
     case ("restart"):
       user_choice_init = 0;
+    case ("os_input"):
+      os_input = input("Shell commands: ");
+      os.system(os_input);
+    case ("check_web_conn"):
+      print("Connected to internet?: " + str(check_internet_socket()));
     case _:
       match (potentialParameters[0]):
         case ("echo"):
