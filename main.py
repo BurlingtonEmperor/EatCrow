@@ -5,6 +5,7 @@ import pickle
 import serial
 import subprocess
 import socket
+import psutil #future use
 
 from troubleshoot import *
 
