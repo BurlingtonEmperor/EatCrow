@@ -5,9 +5,9 @@ import pickle
 import serial
 import subprocess
 import socket
-import psutil #future use
 
 from troubleshoot import *
+from autoclave_simulator import *
 
 which_os = "";
 installation_var = 1;
@@ -27,7 +27,7 @@ def checkWhichPlatform ():
   global COM_PORT;
   
   which_os = sys.platform;
-  if (which_os == 'win32' or which_os == 'win64' or which_os.includes('win')):
+  if (which_os == 'win32' or which_os == 'win64' or which_os.startswith('win')):
     which_os = 'win';
     COM_PORT = "COM3";
   elif (which_os == 'linux'):
@@ -166,6 +166,7 @@ def runCommand (commandText):
       print("restart: restarts program");
       print("os_input: input direct shell commands");
       print("check_web_conn: check internet connection");
+      print("run_sim: run autoclave simulation");
     case ("update_cores"):
       updateCORES();
     case ("oneliner"):
@@ -188,6 +189,10 @@ def runCommand (commandText):
       os.system(os_input);
     case ("check_web_conn"):
       print("Connected to internet?: " + str(check_internet_socket()));
+    case ("run_sim"):
+      activate_sim();
+      autoclave_simulator_interface();
+      
     case _:
       match (potentialParameters[0]):
         case ("echo"):
