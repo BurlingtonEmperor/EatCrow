@@ -87,6 +87,20 @@ def findBoardCLI ():
 def runThroughCLI (inoDIR):
   os.system("arduino-cli compile --upload -p " + COM_PORT + " --fqbn " + default_fqbn + " " + inoDIR);
 
+def emergencySTOP ():
+  can_run_stop = 1;
+  reasons_for_stop_failure = "";
+
+  match (current_dir):
+    case "":
+      can_run_stop = 0;
+      reasons_for_stop_failure = "No set directory. Please use the find_dir command.";
+  match (can_run_stop):
+    case 1:
+      os.system("arduino-cli compile --upload -p " + COM_PORT + " --fqbn " + default_fqbn + " " + current_dir + "\stop");
+    case 0:
+      print(reasons_for_stop_failure);
+
 def oneLinerCommands (commandText):
   csv_liner = commandText.split(";");
   for x in csv_liner:
@@ -224,6 +238,8 @@ def runCommand (commandText):
         case ("run_cli"):
           runParameterCommand(commandText);
         case ("find_file"):
+          runParameterCommand(commandText);
+        case ("set_fqbn"):
           runParameterCommand(commandText);
         case _:
           print("Not a valid command.");
