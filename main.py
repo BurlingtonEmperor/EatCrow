@@ -5,6 +5,7 @@ import pickle
 import serial
 import subprocess
 import socket
+import time
 
 from troubleshoot import *
 from autoclave_simulator import *
@@ -15,6 +16,7 @@ is_setup = 0;
 current_dir = "";
 user_choice_init = 0;
 COM_PORT = "COM3"; # use python -m pip install
+default_fqbn = "arduino:avr:uno";
 
 def clearScreen ():
   os.system('cls' if os.name == 'nt' else 'clear');
@@ -78,9 +80,12 @@ def installProgram ():
   else:
     print("Please come back to these settings.");
     loopThroughInterface();
+
+def findBoardCLI ():
+  os.system("arduino-cli board list");
     
 def runThroughCLI (inoDIR):
-  os.system("arduino-cli compile --fqbn arduino:avr:uno " + inoDIR);
+  os.system("arduino-cli compile --upload -p " + COM_PORT + " --fqbn " + default_fqbn + " " + inoDIR);
 
 def oneLinerCommands (commandText):
   csv_liner = commandText.split(";");
@@ -124,14 +129,27 @@ def check_internet_socket():
     return True;
   except OSError:
     return False;
+
+def read_signal():
+  ser_connection = serial.Serial(COM_PORT, 9600, timeout=1);
+  time.sleep(2);
+
+  if (ser_connection.in_waiting > 0):
+    readline = ser_connection.readline().decode("utf-8").rstrip();
+    print("Recieved: " + readline);
     
 def runParameterCommand (commandText):
+  global default_fqbn;
+  
   csv_liner = commandText.split();
   match (csv_liner[0]):
     case ("run_cli"):
       runThroughCLI(csv_liner[1]);
     case ("find_file"):
       print(findIfFileExists(csv_liner[1]));
+    case ("set_fqbn"):
+      default_fqbn = csv_liner[1];
+      print("fqbn set to " + csv_liner[1]);
     case ("echo"):
       csv_liner.pop(0);
       # print(csv_liner);
@@ -159,6 +177,7 @@ def runCommand (commandText):
       print("clear: clear screen");
       print("clear_idle: clears IDLE screen (if running on IDLE)");
       print("find_dir: find and set current directory");
+      print("find_board_port: find board port");
       print("run_cli: ex. 'run_cli test' runs a test program.");
       print("find_file: find if a file exists; ex. 'find_file main.py'");
       print("em_stop: stop current arduino program");
@@ -167,6 +186,8 @@ def runCommand (commandText):
       print("os_input: input direct shell commands");
       print("check_web_conn: check internet connection");
       print("run_sim: run autoclave simulation");
+      print("read_signal: read signal from board connection");
+      print("set_fqbn: set fqbn for board connection; ex. 'set_fqbn arduino:avr:mega'");
     case ("update_cores"):
       updateCORES();
     case ("oneliner"):
@@ -192,7 +213,10 @@ def runCommand (commandText):
     case ("run_sim"):
       activate_sim();
       autoclave_simulator_interface();
-      
+    case ("read_signal"):
+      read_signal();
+    case ("find_board_port"):
+      findBoardCLI();
     case _:
       match (potentialParameters[0]):
         case ("echo"):
