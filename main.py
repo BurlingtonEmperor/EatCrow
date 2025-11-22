@@ -97,7 +97,7 @@ def emergencySTOP ():
       reasons_for_stop_failure = "No set directory. Please use the find_dir command.";
   match (can_run_stop):
     case 1:
-      os.system("arduino-cli compile --upload -p " + COM_PORT + " --fqbn " + default_fqbn + " " + current_dir + "\stop");
+      os.system("arduino-cli compile --upload -p " + COM_PORT + " --fqbn " + default_fqbn + " " + current_dir + "\\stop");
     case 0:
       print(reasons_for_stop_failure);
 
@@ -151,6 +151,13 @@ def read_signal():
   if (ser_connection.in_waiting > 0):
     readline = ser_connection.readline().decode("utf-8").rstrip();
     print("Recieved: " + readline);
+
+def osAndCOM_check():
+  os_and_com_output = [];
+  os_and_com_output.append(checkWhichPlatform());
+  os_and_com_output.append(COM_PORT);
+
+  return os_and_com_output;
     
 def runParameterCommand (commandText):
   global default_fqbn;
@@ -177,6 +184,13 @@ def runParameterCommand (commandText):
             echo_line_space = " ";
         echo_liner += (echo_line_space + x);
       print(echo_liner);
+    case ("os_input_sl"):
+      csv_liner.pop(0);
+      full_os_cmd = "";
+
+      for x in csv_liner:
+        full_os_cmd += x + " ";
+      os.system(full_os_cmd);
     
 def runCommand (commandText):
   global current_dir;
@@ -198,10 +212,13 @@ def runCommand (commandText):
       print("end_prgm: ends program");
       print("restart: restarts program");
       print("os_input: input direct shell commands");
+      print("os_input_sl: same-line shell commands");
+      print("os_check: check operating system and COM port");
       print("check_web_conn: check internet connection");
       print("run_sim: run autoclave simulation");
       print("read_signal: read signal from board connection");
       print("set_fqbn: set fqbn for board connection; ex. 'set_fqbn arduino:avr:mega'");
+      print("read_fqbn: read current set fqbn value");
     case ("update_cores"):
       updateCORES();
     case ("oneliner"):
@@ -222,6 +239,10 @@ def runCommand (commandText):
     case ("os_input"):
       os_input = input("Shell commands: ");
       os.system(os_input);
+    case ("os_check"):
+      os_check_output = osAndCOM_check();
+      print("System: " + os_check_output[0]);
+      print("COM_PORT: " + os_check_output[1]);
     case ("check_web_conn"):
       print("Connected to internet?: " + str(check_internet_socket()));
     case ("run_sim"):
@@ -231,6 +252,8 @@ def runCommand (commandText):
       read_signal();
     case ("find_board_port"):
       findBoardCLI();
+    case ("read_fqbn"):
+      print("Current FQBN: " + default_fqbn);
     case _:
       match (potentialParameters[0]):
         case ("echo"):
@@ -241,6 +264,8 @@ def runCommand (commandText):
           runParameterCommand(commandText);
         case ("set_fqbn"):
           runParameterCommand(commandText);
+        case ("os_input_sl"):
+          runParameterCommand(commandText)
         case _:
           print("Not a valid command.");
       #P.S. you can simply turn these print statements into return statements for a more advanced UI in the future.
@@ -275,4 +300,3 @@ Would you like to...
 runParameterCommand("echo Eat Crow");
 #end test
 loopThroughInterface();
-        
